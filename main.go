@@ -4,9 +4,20 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"time"
+
+	"github.com/alexnino8/pokedexcli/internal/pokeapi"
 )
 
 func main() {
+	// create the API client with a 5 second timeout
+	pokeClient := pokeapi.NewClient(5 * time.Second)
+
+	// load client into our app's brain
+	cfg := &config{
+		pokeapiClient: pokeClient,
+	}
+
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("Pokedex > ")
@@ -24,7 +35,7 @@ func main() {
 			command, exists := availableCommands[commandName]
 
 			if exists {
-				err := command.callback()
+				err := command.callback(cfg)
 				if err != nil {
 					fmt.Println(err)
 				}
