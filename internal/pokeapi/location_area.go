@@ -15,30 +15,40 @@ func (c *Client) ListLocationAreas(pageURL *string) (RespLocationAreas, error) {
 	if pageURL != nil {
 		url = *pageURL
 	}
-	// build the request
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return RespLocationAreas{}, err
-	}
 
-	// send the request
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return RespLocationAreas{}, err
-	}
+	// check cache for url
+	dat, exists := c.cache.Get(url)
+	var err error
 
-	// ensure connection colses at the end
-	defer resp.Body.Close()
+	if !exists {
 
-	// check for server errors
-	if resp.StatusCode > 299 {
-		return RespLocationAreas{}, fmt.Errorf("response failed with status code: %d", resp.StatusCode)
-	}
+		// build the request
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return RespLocationAreas{}, err
+		}
 
-	// read all the raw bytes of the response body
-	dat, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return RespLocationAreas{}, err
+		// send the request
+		resp, err := c.httpClient.Do(req)
+		if err != nil {
+			return RespLocationAreas{}, err
+		}
+
+		// ensure connection colses at the end
+		defer resp.Body.Close()
+
+		// check for server errors
+		if resp.StatusCode > 299 {
+			return RespLocationAreas{}, fmt.Errorf("response failed with status code: %d", resp.StatusCode)
+		}
+
+		// read all the raw bytes of the response body
+		dat, err = io.ReadAll(resp.Body)
+		if err != nil {
+			return RespLocationAreas{}, err
+		}
+
+		c.cache.Add(url, dat)
 	}
 
 	// unmarshal the raw JSON bytes into our GO struct

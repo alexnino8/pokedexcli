@@ -69,12 +69,18 @@ func commandHelp(cfg *config) error {
 func commandMap(cfg *config) error {
 	// call our engine, passing the next URL -- which is nil the first time
 	locationsResp, err := cfg.pokeapiClient.ListLocationAreas(cfg.nextLocationsURL)
+	// print testing
+	// fmt.Println("next: ", cfg.nextLocationsURL)
+	// fmt.Println("prev: ", cfg.prevLocationsURL)
 	if err != nil {
 		return err
 	}
 	// update next and prev urls
 	cfg.nextLocationsURL = locationsResp.Next
 	cfg.prevLocationsURL = locationsResp.Previous
+
+	//  fmt.Println("next: ", cfg.nextLocationsURL)
+	// fmt.Println("prev: ", cfg.prevLocationsURL)
 
 	// loop through the results and print the names
 	for _, loc := range locationsResp.Results {
@@ -96,9 +102,15 @@ func commandMapb(cfg *config) error {
 		return err
 	}
 
+	// fmt.Println("next: ", cfg.nextLocationsURL)
+	// fmt.Println("prev: ", cfg.prevLocationsURL)
+
 	// update urls
 	cfg.nextLocationsURL = locationsResp.Next
 	cfg.prevLocationsURL = locationsResp.Previous
+
+	// fmt.Println("next: ", cfg.nextLocationsURL)
+	// fmt.Println("prev: ", cfg.prevLocationsURL)
 
 	// loop and print
 	for _, loc := range locationsResp.Results {
