@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -17,7 +18,7 @@ type config struct {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, string) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -42,16 +43,36 @@ func getCommands() map[string]cliCommand {
 			description: "Get the previous page of locations",
 			callback:    commandMapb,
 		},
+		"explore": {
+			name:        "explore",
+			description: "Get a list of all the Pokemon in a specific location",
+			callback:    commandExplore,
+		},
 	}
 }
 
-func commandExit(cfg *config) error {
+func commandExplore(cfg *config, loc string) error {
+	if len(loc) < 1 {
+		return errors.New("no location passed")
+	}
+	fmt.Println("Exploring ", loc)
+	exploreResp, err := cfg.pokeapiClient.ExploreArea(loc)
+	if err != nil {
+		return err
+	}
+	for _, pokemon_encounters := range exploreResp.PokemonEncounters {
+		fmt.Println(pokemon_encounters.Pokemon.Name)
+	}
+	return nil
+}
+
+func commandExit(cfg *config, loc string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(cfg *config) error {
+func commandHelp(cfg *config, loc string) error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
 	fmt.Println("")
@@ -66,7 +87,7 @@ func commandHelp(cfg *config) error {
 }
 
 // commandMap handles moving Forward in the pokemon world
-func commandMap(cfg *config) error {
+func commandMap(cfg *config, loc string) error {
 	// call our engine, passing the next URL -- which is nil the first time
 	locationsResp, err := cfg.pokeapiClient.ListLocationAreas(cfg.nextLocationsURL)
 	// print testing
@@ -90,7 +111,7 @@ func commandMap(cfg *config) error {
 }
 
 // commandMapb handles moving Backwards in the pokemon world
-func commandMapb(cfg *config) error {
+func commandMapb(cfg *config, loc string) error {
 	if cfg.prevLocationsURL == nil {
 		fmt.Println("you're on the first page")
 		return nil

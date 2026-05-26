@@ -35,10 +35,17 @@ func main() {
 			command, exists := availableCommands[commandName]
 
 			if exists {
-				err := command.callback(cfg)
+				var err error
+				if len(clean) > 1 {
+					err = command.callback(cfg, clean[1])
+				} else {
+					err = command.callback(cfg, "")
+				}
+
 				if err != nil {
 					fmt.Println(err)
 				}
+
 			} else {
 				fmt.Println("Unknown command")
 			}

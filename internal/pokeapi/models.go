@@ -10,3 +10,13 @@ type RespLocationAreas struct {
 		URL  string `json:"url"`
 	} `json:"results"`
 }
+
+// these are for the explore command which also calls the location-area endpoint
+
+type RespExploreArea struct {
+	PokemonEncounters []struct {
+		Pokemon struct {
+			Name string `json:"name"`
+		} `json:"pokemon"`
+	} `json:"pokemon_encounters"`
+}
