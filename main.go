@@ -16,6 +16,7 @@ func main() {
 	// load client into our app's brain
 	cfg := &config{
 		pokeapiClient: pokeClient,
+		pokedex:       make(map[string]pokeapi.RespCatchPokemon),
 	}
 
 	scanner := bufio.NewScanner(os.Stdin)
@@ -29,6 +30,7 @@ func main() {
 			}
 
 			commandName := clean[0]
+			arguments := clean[1:]
 
 			availableCommands := getCommands()
 
@@ -37,9 +39,9 @@ func main() {
 			if exists {
 				var err error
 				if len(clean) > 1 {
-					err = command.callback(cfg, clean[1])
+					err = command.callback(cfg, arguments)
 				} else {
-					err = command.callback(cfg, "")
+					err = command.callback(cfg, []string{})
 				}
 
 				if err != nil {

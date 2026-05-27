@@ -20,3 +20,9 @@ type RespExploreArea struct {
 		} `json:"pokemon"`
 	} `json:"pokemon_encounters"`
 }
+
+// for the catch command -- calls the pokemon endpoint
+type RespCatchPokemon struct {
+	Name           string `json:"name"`
+	BaseExperience int    `json:"base_experience"`
+}

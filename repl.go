@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
 
@@ -13,12 +14,13 @@ type config struct {
 	pokeapiClient    pokeapi.Client
 	nextLocationsURL *string
 	prevLocationsURL *string
+	pokedex          map[string]pokeapi.RespCatchPokemon
 }
 
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config, string) error
+	callback    func(*config, []string) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -48,15 +50,56 @@ func getCommands() map[string]cliCommand {
 			description: "Get a list of all the Pokemon in a specific location",
 			callback:    commandExplore,
 		},
+		"catch": {
+			name:        "catch",
+			description: "thow a Pokeball at a pokemon (catch try)",
+			callback:    commandCatch,
+		},
 	}
 }
 
-func commandExplore(cfg *config, loc string) error {
-	if len(loc) < 1 {
+func commandCatch(cfg *config, args []string) error {
+	if len(args) < 1 {
+		return errors.New("Pokemon name or id not provided")
+	}
+
+	_, exists := cfg.pokedex[args[0]]
+	if exists {
+		fmt.Println("you already caught ", args[0])
+		return nil
+	}
+
+	fmt.Printf("Throwing a Pokeball at %v...\n", args[0])
+
+	catchResp, err := cfg.pokeapiClient.CatchPokemon(args[0])
+	if err != nil {
+		return err
+	}
+
+	catchChance := 100 - (catchResp.BaseExperience)
+	if catchChance < 10 {
+		catchChance = 10
+	}
+	roll := rand.Intn(100)
+
+	if roll < catchChance {
+		fmt.Println(catchResp.Name, "was caught!")
+		cfg.pokedex[catchResp.Name] = catchResp
+
+	} else {
+		fmt.Println(catchResp.Name, "escaped!")
+	}
+
+	return nil
+
+}
+
+func commandExplore(cfg *config, args []string) error {
+	if len(args[0]) < 1 {
 		return errors.New("no location passed")
 	}
-	fmt.Println("Exploring ", loc)
-	exploreResp, err := cfg.pokeapiClient.ExploreArea(loc)
+	fmt.Println("Exploring ", args[0])
+	exploreResp, err := cfg.pokeapiClient.ExploreArea(args[0])
 	if err != nil {
 		return err
 	}
@@ -66,13 +109,13 @@ func commandExplore(cfg *config, loc string) error {
 	return nil
 }
 
-func commandExit(cfg *config, loc string) error {
+func commandExit(cfg *config, args []string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(cfg *config, loc string) error {
+func commandHelp(cfg *config, args []string) error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
 	fmt.Println("")
@@ -87,7 +130,7 @@ func commandHelp(cfg *config, loc string) error {
 }
 
 // commandMap handles moving Forward in the pokemon world
-func commandMap(cfg *config, loc string) error {
+func commandMap(cfg *config, args []string) error {
 	// call our engine, passing the next URL -- which is nil the first time
 	locationsResp, err := cfg.pokeapiClient.ListLocationAreas(cfg.nextLocationsURL)
 	// print testing
@@ -111,7 +154,7 @@ func commandMap(cfg *config, loc string) error {
 }
 
 // commandMapb handles moving Backwards in the pokemon world
-func commandMapb(cfg *config, loc string) error {
+func commandMapb(cfg *config, args []string) error {
 	if cfg.prevLocationsURL == nil {
 		fmt.Println("you're on the first page")
 		return nil
