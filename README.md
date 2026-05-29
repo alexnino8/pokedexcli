@@ -5,8 +5,8 @@ A command-line Pokedex application built in Go.
 ## Current Progress
 
 The CLI supports interactive exploration of the Pokémon world via the PokéAPI,
-backed by a custom in-memory cache for fast repeat queries. You can now also
-attempt to catch Pokémon and add them to your Pokedex.
+backed by a custom in-memory cache for fast repeat queries. You can catch Pokémon,
+add them to your Pokedex, and inspect their details.
 
 ## Supported Commands
 
@@ -16,6 +16,7 @@ attempt to catch Pokémon and add them to your Pokedex.
 - `mapb` — Displays the previous 20 location areas (back-pagination).
 - `explore <area-name>` — Lists all Pokémon that can be found in the given location area.
 - `catch <pokemon-name>` — Attempts to catch a Pokémon. Success is based on the Pokémon's base experience — the higher it is, the harder the catch.
+- `inspect <pokemon-name>` — Displays the name, height, weight, stats, and types of a caught Pokémon.
 
 ## Example
 
@@ -40,6 +41,19 @@ pikachu escaped!
 Pokedex > catch pikachu
 Throwing a Pokeball at pikachu...
 pikachu was caught!
+Pokedex > inspect pikachu
+Name: pikachu
+Height: 4
+Weight: 60
+Stats:
+  -hp: 35
+  -attack: 55
+  -defense: 40
+  -special-attack: 50
+  -special-defense: 50
+  -speed: 90
+Types:
+  - electric
 ```
 
 ## Architecture Highlights
@@ -48,6 +62,7 @@ pikachu was caught!
 - PokéAPI client in `internal/pokeapi` for HTTP requests and JSON parsing.
 - Custom cache (`internal/pokecache`) with TTL-based eviction via a background reaper goroutine — re-running a query hits the cache instead of the network.
 - Caught Pokémon are tracked in a `map[string]Pokemon` on the config struct.
+- `inspect` reads directly from the caught Pokémon map — no extra API call needed.
 
 ## Installation
 
@@ -67,5 +82,4 @@ go run .
 
 ## Future Features
 
-- [ ] **Inspect**: View stats, types, height, and weight of caught Pokémon.
 - [ ] **Pokedex**: List all the Pokémon you've caught.
