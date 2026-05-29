@@ -16,7 +16,7 @@ func main() {
 	// load client into our app's brain
 	cfg := &config{
 		pokeapiClient: pokeClient,
-		pokedex:       make(map[string]pokeapi.RespCatchPokemon),
+		pokedex:       make(map[string]pokeapi.Pokemon),
 	}
 
 	scanner := bufio.NewScanner(os.Stdin)

@@ -14,7 +14,7 @@ type config struct {
 	pokeapiClient    pokeapi.Client
 	nextLocationsURL *string
 	prevLocationsURL *string
-	pokedex          map[string]pokeapi.RespCatchPokemon
+	pokedex          map[string]pokeapi.Pokemon
 }
 
 type cliCommand struct {
@@ -52,10 +52,45 @@ func getCommands() map[string]cliCommand {
 		},
 		"catch": {
 			name:        "catch",
-			description: "thow a Pokeball at a pokemon (catch try)",
+			description: "Throw a Pokeball at a pokemon (catch try)",
 			callback:    commandCatch,
 		},
+		"inspect": {
+			name:        "inspect",
+			description: "Print a specific Pokemon's details (if already caught)",
+			callback:    commandInspect,
+		},
 	}
+}
+
+func commandInspect(cfg *config, args []string) error {
+	if len(args) != 1 {
+		return errors.New("you must provide a pokemon name")
+	}
+
+	pokemon := args[0]
+
+	_, exists := cfg.pokedex[pokemon]
+
+	if !exists {
+		return errors.New("you have not caught that pokemon")
+	}
+
+	fmt.Println("Name:", cfg.pokedex[pokemon].Name)
+	fmt.Println("Height:", cfg.pokedex[pokemon].Height)
+	fmt.Println("Weight:", cfg.pokedex[pokemon].Weight)
+	fmt.Println("Stats:")
+	for _, stat := range cfg.pokedex[pokemon].Stats {
+		digit := stat.BaseStat
+		name := stat.Stat.Name
+		fmt.Printf("    -%v: %v\n", name, digit)
+	}
+	fmt.Println("Types:")
+	for _, typ := range cfg.pokedex[pokemon].Types {
+		fmt.Println("    -", typ.Type.Name)
+	}
+
+	return nil
 }
 
 func commandCatch(cfg *config, args []string) error {
