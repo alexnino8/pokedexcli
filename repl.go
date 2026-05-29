@@ -60,7 +60,26 @@ func getCommands() map[string]cliCommand {
 			description: "Print a specific Pokemon's details (if already caught)",
 			callback:    commandInspect,
 		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "List of all the names of the Pokemon the user has caught",
+			callback:    commandPokedex,
+		},
 	}
+}
+
+func commandPokedex(cfg *config, args []string) error {
+	if len(cfg.pokedex) < 1 {
+		return errors.New("you have no Pokemon yet")
+	}
+
+	fmt.Println("Your Pokedex:")
+
+	for name := range cfg.pokedex {
+		fmt.Println("  -", name)
+	}
+
+	return nil
 }
 
 func commandInspect(cfg *config, args []string) error {
