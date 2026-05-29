@@ -4,9 +4,7 @@ A command-line Pokedex application built in Go.
 
 ## Current Progress
 
-The CLI supports interactive exploration of the Pokémon world via the PokéAPI,
-backed by a custom in-memory cache for fast repeat queries. You can catch Pokémon,
-add them to your Pokedex, and inspect their details.
+The CLI supports interactive exploration of the Pokémon world via the PokéAPI, backed by a custom in-memory cache for fast repeat queries. You can catch Pokémon, add them to your Pokedex, and inspect their details.
 
 ## Supported Commands
 
@@ -17,6 +15,7 @@ add them to your Pokedex, and inspect their details.
 - `explore <area-name>` — Lists all Pokémon that can be found in the given location area.
 - `catch <pokemon-name>` — Attempts to catch a Pokémon. Success is based on the Pokémon's base experience — the higher it is, the harder the catch.
 - `inspect <pokemon-name>` — Displays the name, height, weight, stats, and types of a caught Pokémon.
+- `pokedex` — Lists the names of all Pokémon you have successfully caught.
 
 ## Example
 
@@ -41,6 +40,11 @@ pikachu escaped!
 Pokedex > catch pikachu
 Throwing a Pokeball at pikachu...
 pikachu was caught!
+
+Pokedex > pokedex
+Your Pokedex:
+ - pikachu
+
 Pokedex > inspect pikachu
 Name: pikachu
 Height: 4
@@ -54,15 +58,13 @@ Stats:
   -speed: 90
 Types:
   - electric
-```
 
 ## Architecture Highlights
 
-- REPL loop with a command registry that dispatches to handlers and supports arguments.
-- PokéAPI client in `internal/pokeapi` for HTTP requests and JSON parsing.
-- Custom cache (`internal/pokecache`) with TTL-based eviction via a background reaper goroutine — re-running a query hits the cache instead of the network.
-- Caught Pokémon are tracked in a `map[string]Pokemon` on the config struct.
-- `inspect` reads directly from the caught Pokémon map — no extra API call needed.
+- REPL Loop: A robust command registry that dispatches to handlers and supports dynamic arguments.
+- PokéAPI Client: A dedicated internal package for managing HTTP requests and JSON decoding.
+- Custom Cache: An internal package featuring a thread-safe cache with TTL-based eviction via a background reaper goroutine to optimize network performance.
+- State Management: Uses a shared configuration struct to track the Pokedex (a map[string]Pokemon) and pagination state.
 
 ## Installation
 
@@ -80,6 +82,3 @@ Run the application:
 go run .
 ```
 
-## Future Features
-
-- [ ] **Pokedex**: List all the Pokémon you've caught.
